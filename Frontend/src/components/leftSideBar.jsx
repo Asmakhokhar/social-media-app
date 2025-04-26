@@ -1,6 +1,9 @@
-import { Heart, Home, LogOut, MessageCircle, PlaySquare, Search, TrendingUp } from 'lucide-react'
+import { Heart, Home, LogOut, MessageCircle, PlusSquare, Search, TrendingUp } from 'lucide-react'
 import React from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import axios from 'axios'
 
 const sideBarItems = [
   { icons: <Home />, text: "Home" },
@@ -8,12 +11,12 @@ const sideBarItems = [
   { icons: <TrendingUp />, text: "Explore" },
   { icons: <MessageCircle />, text: "Messages" },
   { icons: <Heart />, text: "Notification" },
-  { icons: <PlaySquare />, text: "Create" },
+  { icons: <PlusSquare />, text: "Create" },
   {
     icons: (
-      <Avatar>
+      <Avatar className='w-6 h-6'>
         <AvatarImage src="https://github.com/shadcn.png" />
-        <AvatarFallback>CN</AvatarFallback>
+        <AvatarFallback>PR</AvatarFallback>
       </Avatar>
     ), text: "Profile"
   },
@@ -21,21 +24,41 @@ const sideBarItems = [
 ]
 
 const LeftSideBar = () => {
-  return (
-    <div className='fixed top-0 z-10 left-0 px-4 border-r border-gray-300 w-[16%] h-screen'>
-     <div className='flex flex-col'>
-        <h1>Logo</h1>
-        <div>
-        {
-        sideBarItems.map((item, index) => (
-          <div key={index} className='flex items-center gap-3 relative hover:bg-gray-100 cursor-pointer rounded-lg p-3 my-3'>
-            {item.icons}
-            <span>{item.text}</span>
-          </div>
-        ))
+   const navigate = useNavigate();
+
+   const logoutHandler = async () => {
+    try {
+      const res = await axios.get('http://localhost:8080/api/v1/user/logout',{withCredentials:true});
+      if(res.data.success){
+        navigate("/login");
+       toast.success(res.data.message); 
       }
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+   }
+
+   const sidebarHandler = (textType) => {
+    if( textType == 'Logout') logoutHandler();
+   }
+  return (
+    <div className='fixed top-0 left-0 z-10 w-[16%] h-screen border-r border-gray-300 px-4 py-6 bg-white'>
+      <div className='flex flex-col gap-6'>
+        <h1 className='text-2xl font-bold mb-4'>Logo</h1>
+        <div className='flex flex-col gap-2'>
+          {
+            sideBarItems.map((item, index) => (
+              <div
+                key={index} onClick={() => sidebarHandler(item.text)}
+                className='flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer'
+              >
+                <div className='text-[20px]'>{item.icons}</div>
+                <span className='text-sm font-medium'>{item.text}</span>
+              </div>
+            ))
+          }
         </div>
-     </div>
+      </div>
     </div>
   )
 }
